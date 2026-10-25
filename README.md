@@ -28,10 +28,18 @@ inventario-inteligente/
 
 ## 🚀 Roadmap por fases
 
+### Fase 0 — Módulo ventas y egresos ⬜
+- [x] Modelos `Sale` y `Expense` con timestamp UTC
+- [ ] Schemas Pydantic para validación
+- [ ] Rutas POST /sales, POST /expenses
+- [ ] Ruta GET /summary?date= con totales del día
+- [ ] Probar con Postman
+
 ### Fase 1 — Base del proyecto ⬜
-- [ ] Estructura del proyecto (React + Vite + Python FastAPI + PostgreSQL en Docker)
-- [ ] Configuración de Docker con docker-compose
-- [ ] Base de datos con todas las tablas
+- [x] Estructura del proyecto (React + Vite + Python FastAPI + PostgreSQL en Docker)
+- [x] Configuración de Docker con docker-compose
+- [x] Estructura de carpetas backend (config, models, schemas, routes, services, migrations, middlewares)
+- [ ] Base de datos con todas las tablas (products, users, inventory_sessions, inventory_counts)
 - [ ] Autenticación JWT con dos roles
 - [ ] Importar Excel existente para poblar la BD inicial
 
@@ -185,8 +193,9 @@ inventario-inteligente/
 
 | Período | Meta |
 |---------|------|
-| Junio 2026 | Fases 1, 2 y 3 |
-| Julio 2026 | Fases 4, 5 y 6 |
+| Octubre — Diciembre 2026 | Módulo ventas/egresos + Fases 1, 2 y 3 |
+| Diciembre 2026 — Enero 2027 | Fases 4 y 5 |
+| Febrero — Marzo 2027 | Fase 6 y extras |
 
 ---
 
