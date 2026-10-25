@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from sqlalchemy import text
-from config.database import engine
+from config.database import engine, create_tables
 
 app = FastAPI()
+
+create_tables()
 
 
 @app.get("/")
