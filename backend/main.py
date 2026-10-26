@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from config.database import engine, create_tables
 from routes.sale import router as sale_router
@@ -6,6 +7,13 @@ from routes.expense import router as expense_router
 from routes.summary import router as summary_router
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 create_tables()
 
