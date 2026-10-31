@@ -6,6 +6,7 @@ from datetime import datetime
 
 
 def get_summary(db: Session, date_from: datetime, date_to: datetime):
+    """Calcula el total de ventas, gastos y balance para un rango de fechas. No se guarda en BD."""
     total_sales = db.query(func.sum(Sale.amount))\
         .filter(Sale.date >= date_from)\
         .filter(Sale.date <= date_to)\

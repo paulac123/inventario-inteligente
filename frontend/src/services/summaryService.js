@@ -8,11 +8,11 @@ const getLocalOffset = () => {
     return `${sign}${hours}:${minutes}`
 }
 
-const getSummary = async (date) => {
+const getSummary = async (dateFrom, dateTo) => {
     try {
         const offset = getLocalOffset()
-        const date_from = `${date}T00:00:00${offset}`
-        const date_to = `${date}T23:59:59${offset}`
+        const date_from = `${dateFrom}T00:00:00${offset}`
+        const date_to = `${dateTo}T23:59:59${offset}`
         const response = await api.get('/summary/', { params: { date_from, date_to } })
         return response.data
     } catch (error) {

@@ -5,10 +5,13 @@ from datetime import datetime, timezone
 
 
 def create_expense(db: Session, expense_data: ExpenseCreate):
+    """Crea el objeto Expense, lo guarda en BD y retorna el registro creado."""
     new_expense = Expense(
         amount=expense_data.amount,
         description=expense_data.description,
-        date=expense_data.date or datetime.now(timezone.utc)
+        date=expense_data.date or datetime.now(timezone.utc),
+        category_id=expense_data.category_id,
+        payment_method_id=expense_data.payment_method_id
     )
     db.add(new_expense)
     db.commit()
