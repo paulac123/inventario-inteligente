@@ -1,3 +1,4 @@
+# Configuración de la conexión a PostgreSQL y base de la ORM
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
@@ -17,6 +18,7 @@ class Base(DeclarativeBase):
 
 
 def get_db():
+    """Genera una sesión de BD por request y la cierra al terminar."""
     db = SessionLocal()
     try:
         yield db
@@ -25,6 +27,9 @@ def get_db():
 
 
 def create_tables():
+    """Crea todas las tablas definidas en los modelos si no existen."""
     from models.sale import Sale
     from models.expense import Expense
+    from models.category import Category
+    from models.payment_method import PaymentMethod
     Base.metadata.create_all(engine)
