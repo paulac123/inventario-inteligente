@@ -24,27 +24,37 @@ inventario-inteligente/
 │   ├── config/
 │   │   └── database.py
 │   ├── models/
-│   │   ├── sale.py
-│   │   ├── expense.py
-│   │   ├── category.py
-│   │   └── payment_method.py
+│   │   ├── saleModels.py
+│   │   ├── saleItemModels.py
+│   │   ├── expenseModels.py
+│   │   ├── categoryModels.py
+│   │   ├── paymentMethodModels.py
+│   │   ├── productModels.py
+│   │   └── productVariantsModels.py
 │   ├── schemas/
 │   │   ├── sale.py
+│   │   ├── saleItemSchema.py
 │   │   ├── expense.py
 │   │   ├── category.py
-│   │   └── payment_method.py
+│   │   ├── payment_method.py
+│   │   ├── productSchema.py
+│   │   └── productVariantsSchema.py
 │   ├── routes/
 │   │   ├── sale.py
 │   │   ├── expense.py
 │   │   ├── summary.py
 │   │   ├── category.py
-│   │   └── payment_method.py
+│   │   ├── payment_method.py
+│   │   ├── productRouter.py
+│   │   └── productVariantsRouter.py
 │   ├── services/
 │   │   ├── saleService.py
 │   │   ├── expenseService.py
 │   │   ├── summaryService.py
 │   │   ├── categoryService.py
-│   │   └── paymentMethodService.py
+│   │   ├── paymentMethodService.py
+│   │   ├── productService.py
+│   │   └── productVariantsService.py
 │   ├── middlewares/
 │   │   └── error_handler.py
 │   ├── main.py
@@ -55,10 +65,13 @@ inventario-inteligente/
 │       ├── components/
 │       │   ├── Sidebar.jsx
 │       │   ├── SaleModal.jsx
-│       │   └── ExpenseModal.jsx
+│       │   ├── ExpenseModal.jsx
+│       │   ├── ProductModal.jsx
+│       │   └── VariantModal.jsx
 │       ├── pages/
 │       │   ├── Home.jsx
 │       │   ├── Transactions.jsx
+│       │   ├── Inventory.jsx
 │       │   └── Summary.jsx
 │       └── services/
 │           ├── api.js
@@ -66,7 +79,9 @@ inventario-inteligente/
 │           ├── expenseService.js
 │           ├── summaryService.js
 │           ├── categoryService.js
-│           └── paymentMethodService.js
+│           ├── paymentMethodService.js
+│           ├── productService.js
+│           └── productVariantsService.js
 ├── docker-compose.yml
 └── README.md
 ```
@@ -93,15 +108,30 @@ inventario-inteligente/
 - [x] Frontend compilado y servido desde FastAPI (1 solo túnel ngrok)
 - [x] Notificación flotante de éxito al guardar venta o gasto
 
-### Fase 2 — Vista Inventariador ⬜
+### Fase 2 — Módulo inventario ✅
+- [x] Tablas: products, product_variants, sale_items
+- [x] CRUD completo de productos (crear, editar, eliminar)
+- [x] CRUD completo de variantes (talla, color, stock, stock mín/máx)
+- [x] Tabla expandible con variantes por producto
+- [x] Proveedor en listado de productos
+- [x] Modal de venta con carrito (ítems del inventario + ítems manuales)
+- [x] Descuento automático de inventario al registrar venta
+- [x] Eliminar venta con rollback al inventario
+- [x] Lista de ventas del día en resumen con botón eliminar
+
+### Fase 3 — Autenticación y roles ⬜
+- [ ] Tablas: users, roles
+- [ ] Autenticación JWT con dos roles: inventariador y supervisor
 - [ ] Login y redirección según rol
+
+### Fase 4 — Vista Inventariador ⬜
 - [ ] Ver lista de productos sin cantidades ni marca
 - [ ] Escaneo de código de barras con cámara del celular
 - [ ] Si no tiene código → foto → Gemini Vision sugiere producto → usuario confirma
 - [ ] Ingresar unidades contadas físicamente
 - [ ] Guardar conteo en sesión activa
 
-### Fase 3 — Vista Supervisor ⬜
+### Fase 5 — Vista Supervisor ⬜
 - [ ] Ver resumen de sesión con costo, precio de venta y totales
 - [ ] Totales agrupados por marca, referencia y categoría
 - [ ] Cruce automático: conteo físico vs cantidad en sistema
@@ -109,24 +139,19 @@ inventario-inteligente/
 - [ ] Exportar reporte a Excel o PDF
 - [ ] Aprobar o rechazar sesión de inventario
 
-### Fase 4 — Base de datos de inventario ⬜
-- [ ] Tablas: products, users, inventory_sessions, inventory_counts
-- [ ] Autenticación JWT con dos roles
-- [ ] Importar Excel existente para poblar la BD inicial
-
-### Fase 5 — Dashboard y Analytics ⬜
+### Fase 6 — Dashboard y Analytics ⬜
 - [ ] Dashboard con métricas generales de stock
 - [ ] Gráficas de rotación por categoría, marca y referencia
 - [ ] Alertas de stock mínimo
 - [ ] Predicciones basadas en histórico (Pandas, Scikit-learn)
 
-### Fase 6 — Agente IA ⬜
+### Fase 7 — Agente IA ⬜
 - [ ] Agente Claude integrado para análisis conversacional
 - [ ] Interpretar patrones detectados en lenguaje natural
 - [ ] Responder preguntas sobre el inventario
 - [ ] Sugerencias inteligentes cruzando múltiples variables
 
-### Fase 7 — Funcionalidades extra ⬜
+### Fase 8 — Funcionalidades extra ⬜
 - [ ] Generación automática de referencias por categoría + color + número
 - [ ] Impresión de etiquetas con código de barras desde la app
 
