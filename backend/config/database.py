@@ -28,8 +28,11 @@ def get_db():
 
 def create_tables():
     """Crea todas las tablas definidas en los modelos si no existen."""
-    from models.sale import Sale
-    from models.expense import Expense
-    from models.category import Category
-    from models.payment_method import PaymentMethod
+    from models.saleModels import Sale
+    from models.expenseModels import Expense
+    from models.categoryModels import Category
+    from models.paymentMethodModels import PaymentMethod
+    from models.productModels import Product
+    from models.productVariantsModels import ProductVariant
+    from models.saleItemModels import SaleItem
     Base.metadata.create_all(engine)

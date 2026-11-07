@@ -3,7 +3,7 @@ import createExpense from '../services/expenseService'
 import getCategories from '../services/categoryService'
 import getPaymentMethods from '../services/paymentMethodService'
 
-const ExpenseModal = ({ onClose }) => {
+const ExpenseModal = ({ onClose, onSuccess }) => {
     const [amount, setAmount] = useState('')
     const [description, setDescription] = useState('')
     const [categoryId, setCategoryId] = useState('')
@@ -14,15 +14,32 @@ const ExpenseModal = ({ onClose }) => {
     const [paymentMethods, setPaymentMethods] = useState([])
     const [pmSearch, setPmSearch] = useState('')
     const [pmOpen, setPmOpen] = useState(false)
+    const [error, setError] = useState('')
 
     useEffect(() => {
         getCategories('expense').then(setCategories)
         getPaymentMethods().then(setPaymentMethods)
     }, [])
 
+    const formatCOP = (value) => {
+        const num = value.replace(/\D/g, '')
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+    }
+    const parseCOP = (value) => parseFloat(value.replace(/\./g, '')) || 0
+
     const handleSave = async () => {
-        await createExpense({ amount, description, category_id: categoryId, payment_method_id: paymentMethodId })
-        onClose()
+        if (!categoryId || !paymentMethodId || !amount) {
+            setError('Debes completar categoría, forma de pago y valor.')
+            return
+        }
+        try {
+            setError('')
+            await createExpense({ amount: parseCOP(amount), description, category_id: categoryId, payment_method_id: paymentMethodId })
+            onSuccess()
+            onClose()
+        } catch (e) {
+            setError('Ocurrió un error al guardar. Intenta de nuevo.')
+        }
     }
 
     return (
@@ -71,8 +88,9 @@ const ExpenseModal = ({ onClose }) => {
                         </ul>
                     )}
                 </div>
-                <input type="number" placeholder="Valor" className="w-full border border-gray-300 rounded-lg p-2 mb-3" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                <input type="text" placeholder="Valor" className="w-full border border-gray-300 rounded-lg p-2 mb-3" value={amount} onChange={(e) => setAmount(formatCOP(e.target.value))} />
                 <input type="text" placeholder="Descripción (opcional)" className="w-full border border-gray-300 rounded-lg p-2 mb-3" value={description} onChange={(e) => setDescription(e.target.value)} />
+                {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
                 <button className="bg-gray-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-600" onClick={onClose}>Cancelar</button>
                 <button className="bg-red-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-600" onClick={handleSave}>Guardar</button>
             </div>

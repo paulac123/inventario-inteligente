@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models.expense import Expense
+from models.expenseModels import Expense
 from schemas.expense import ExpenseCreate
 from datetime import datetime, timezone
 
