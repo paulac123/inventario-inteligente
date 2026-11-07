@@ -23,6 +23,8 @@ const SaleModal = ({ onClose, onSuccess }) => {
     const [selectedVariant, setSelectedVariant] = useState(null)
     const [quantity, setQuantity] = useState('')
 
+    const [discount, setDiscount] = useState('')
+
     const [manualSupplierSearch, setManualSupplierSearch] = useState('')
     const [manualSupplierOpen, setManualSupplierOpen] = useState(false)
     const [manualSupplierName, setManualSupplierName] = useState('')
@@ -100,7 +102,9 @@ const SaleModal = ({ onClose, onSuccess }) => {
         setItems(items.filter(i => i.key !== key))
     }
 
-    const total = items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0)
+    const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0)
+    const discountAmt = subtotal * (parseFloat(discount) || 0) / 100
+    const total = subtotal - discountAmt
 
     const handleSave = async () => {
         if (items.length === 0) { setError('Agrega al menos un producto.'); return }
@@ -114,6 +118,7 @@ const SaleModal = ({ onClose, onSuccess }) => {
                     unit_price: i.unit_price
                 })),
                 description,
+                discount: parseFloat(discount) || 0,
                 category_id: null,
                 payment_method_id: paymentMethodId
             })
@@ -243,9 +248,19 @@ const SaleModal = ({ onClose, onSuccess }) => {
                             </tbody>
                         </table>
                         <p className="text-right text-sm text-gray-500">{items.reduce((sum, i) => sum + i.quantity, 0)} unidades</p>
+                        <p className="text-right text-sm text-gray-500">Subtotal: ${subtotal.toLocaleString('es-CO')}</p>
+                        {discountAmt > 0 && <p className="text-right text-sm text-red-500">Descuento {discount}%: −${discountAmt.toLocaleString('es-CO')}</p>}
                         <p className="text-right font-bold">Total: ${total.toLocaleString('es-CO')}</p>
                     </div>
                 )}
+
+                {/* Descuento */}
+                <div className="flex items-center gap-2 mb-3">
+                    <input type="number" placeholder="Descuento %" min="0" max="100"
+                        className="w-32 border border-gray-300 rounded-lg p-2 text-sm"
+                        value={discount} onChange={(e) => setDiscount(e.target.value)} />
+                    <span className="text-sm text-gray-500">% de descuento sobre el total</span>
+                </div>
 
                 {/* Forma de pago */}
                 <div className="relative mb-3">

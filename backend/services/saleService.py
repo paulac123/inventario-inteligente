@@ -7,12 +7,15 @@ from datetime import datetime, timezone
 
 
 def create_sale(db: Session, sale_data: SaleCreate):
-    # 1. Calcular total
-    amount = sum(item.quantity * item.unit_price for item in sale_data.items)
+    # 1. Calcular total con descuento
+    subtotal = sum(item.quantity * item.unit_price for item in sale_data.items)
+    discount = sale_data.discount or 0
+    amount = subtotal * (1 - discount / 100)
 
     # 2. Crear la venta
     new_sale = Sale(
         amount=amount,
+        discount=discount,
         description=sale_data.description,
         date=sale_data.date or datetime.now(timezone.utc),
         category_id=sale_data.category_id,
@@ -47,6 +50,7 @@ def get_sales_by_date(db: Session, date_from: datetime, date_to: datetime):
         result.append({
             "id": sale.id,
             "amount": float(sale.amount),
+            "discount": float(sale.discount or 0),
             "description": sale.description,
             "date": sale.date,
             "category_id": sale.category_id,
