@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models.category import Category
+from models.categoryModels import Category
 from fastapi import HTTPException
 
 

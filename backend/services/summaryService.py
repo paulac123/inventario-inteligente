@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from models.sale import Sale
-from models.expense import Expense
+from models.saleModels import Sale
+from models.expenseModels import Expense
 from datetime import datetime
 
 

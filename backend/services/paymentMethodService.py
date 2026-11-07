@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models.payment_method import PaymentMethod
+from models.paymentMethodModels import PaymentMethod
 from fastapi import HTTPException
 
 def get_payment_methods(db: Session):

@@ -21,6 +21,12 @@ const ExpenseModal = ({ onClose, onSuccess }) => {
         getPaymentMethods().then(setPaymentMethods)
     }, [])
 
+    const formatCOP = (value) => {
+        const num = value.replace(/\D/g, '')
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+    }
+    const parseCOP = (value) => parseFloat(value.replace(/\./g, '')) || 0
+
     const handleSave = async () => {
         if (!categoryId || !paymentMethodId || !amount) {
             setError('Debes completar categoría, forma de pago y valor.')
@@ -28,7 +34,7 @@ const ExpenseModal = ({ onClose, onSuccess }) => {
         }
         try {
             setError('')
-            await createExpense({ amount, description, category_id: categoryId, payment_method_id: paymentMethodId })
+            await createExpense({ amount: parseCOP(amount), description, category_id: categoryId, payment_method_id: paymentMethodId })
             onSuccess()
             onClose()
         } catch (e) {
@@ -82,7 +88,7 @@ const ExpenseModal = ({ onClose, onSuccess }) => {
                         </ul>
                     )}
                 </div>
-                <input type="number" placeholder="Valor" className="w-full border border-gray-300 rounded-lg p-2 mb-3" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                <input type="text" placeholder="Valor" className="w-full border border-gray-300 rounded-lg p-2 mb-3" value={amount} onChange={(e) => setAmount(formatCOP(e.target.value))} />
                 <input type="text" placeholder="Descripción (opcional)" className="w-full border border-gray-300 rounded-lg p-2 mb-3" value={description} onChange={(e) => setDescription(e.target.value)} />
                 {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
                 <button className="bg-gray-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-600" onClick={onClose}>Cancelar</button>
