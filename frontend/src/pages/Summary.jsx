@@ -61,7 +61,12 @@ const Summary = () => {
                             {sales.map(sale => (
                                 <tr key={sale.id} className="hover:bg-gray-50">
                                     <td className="p-3 border">{formatHour(sale.date)}</td>
-                                    <td className="p-3 border font-bold">${Number(sale.amount).toLocaleString('es-CO')}</td>
+                                    <td className="p-3 border font-bold">
+                                        ${Number(sale.amount).toLocaleString('es-CO')}
+                                        {sale.discount > 0 && (
+                                            <span className="text-xs text-red-400 ml-1">({sale.discount}% dto)</span>
+                                        )}
+                                    </td>
                                     <td className="p-3 border">{sale.items.reduce((sum, i) => sum + i.quantity, 0)} uds</td>
                                     <td className="p-3 border text-gray-500">{sale.description || '—'}</td>
                                     <td className="p-3 border">

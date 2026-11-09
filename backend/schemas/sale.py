@@ -11,6 +11,7 @@ class SaleCreate(BaseModel):
     date: Optional[datetime] = None
     category_id: Optional[int] = None
     payment_method_id: int
+    discount: Optional[float] = 0
 
 
 class SaleResponse(BaseModel):
@@ -21,6 +22,7 @@ class SaleResponse(BaseModel):
     date: datetime
     category_id: Optional[int] = None
     payment_method_id: Optional[int] = None
+    discount: float = 0
     items: list[SaleItemResponse] = []
 
     class Config:

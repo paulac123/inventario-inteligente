@@ -23,6 +23,9 @@ const SaleModal = ({ onClose, onSuccess }) => {
     const [selectedVariant, setSelectedVariant] = useState(null)
     const [quantity, setQuantity] = useState('')
 
+    const [discount, setDiscount] = useState('')
+    const [discountType, setDiscountType] = useState('percent')
+
     const [manualSupplierSearch, setManualSupplierSearch] = useState('')
     const [manualSupplierOpen, setManualSupplierOpen] = useState(false)
     const [manualSupplierName, setManualSupplierName] = useState('')
@@ -100,7 +103,11 @@ const SaleModal = ({ onClose, onSuccess }) => {
         setItems(items.filter(i => i.key !== key))
     }
 
-    const total = items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0)
+    const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0)
+    const discountAmt = discountType === 'percent'
+        ? subtotal * (parseFloat(discount) || 0) / 100
+        : parseCOP(discount)
+    const total = subtotal - discountAmt
 
     const handleSave = async () => {
         if (items.length === 0) { setError('Agrega al menos un producto.'); return }
@@ -114,6 +121,9 @@ const SaleModal = ({ onClose, onSuccess }) => {
                     unit_price: i.unit_price
                 })),
                 description,
+                discount: discountType === 'percent'
+                                ? parseFloat(discount) || 0
+                                : (subtotal > 0 ? (parseCOP(discount) / subtotal) * 100 : 0),
                 category_id: null,
                 payment_method_id: paymentMethodId
             })
@@ -243,9 +253,32 @@ const SaleModal = ({ onClose, onSuccess }) => {
                             </tbody>
                         </table>
                         <p className="text-right text-sm text-gray-500">{items.reduce((sum, i) => sum + i.quantity, 0)} unidades</p>
+                        <p className="text-right text-sm text-gray-500">Subtotal: ${subtotal.toLocaleString('es-CO')}</p>
+                        {discountAmt > 0 && (
+                            <p className="text-right text-sm text-red-500">
+                                Descuento {discountType === 'percent' ? `${discount}%` : `$${discountAmt.toLocaleString('es-CO')}`}: −${discountAmt.toLocaleString('es-CO')}
+                            </p>
+                        )}
                         <p className="text-right font-bold">Total: ${total.toLocaleString('es-CO')}</p>
                     </div>
                 )}
+
+                {/* Descuento */}
+                <div className="flex items-center gap-2 mb-3">
+                    <button
+                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm font-bold hover:bg-gray-100"
+                        onClick={() => { setDiscountType(t => t === 'percent' ? 'value' : 'percent'); setDiscount('') }}>
+                        {discountType === 'percent' ? '%' : '$'}
+                    </button>
+                    <input
+                        placeholder={discountType === 'percent' ? 'Descuento %' : 'Valor descuento'}
+                        className="w-36 border border-gray-300 rounded-lg p-2 text-sm"
+                        value={discount}
+                        onChange={(e) => setDiscount(discountType === 'percent' ? e.target.value : formatCOP(e.target.value))} />
+                    <span className="text-sm text-gray-400">
+                        {discountType === 'percent' ? 'sobre el total' : 'valor fijo'}
+                    </span>
+                </div>
 
                 {/* Forma de pago */}
                 <div className="relative mb-3">

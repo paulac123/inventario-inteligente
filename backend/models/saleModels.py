@@ -12,3 +12,4 @@ class Sale(Base):
     date = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     payment_method_id = Column(Integer, ForeignKey("payment_methods.id"), nullable=True)
+    discount = Column(Numeric(5, 2), nullable=False, default=0)
