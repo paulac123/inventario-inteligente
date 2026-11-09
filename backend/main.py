@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -42,8 +43,9 @@ def test_db_connection():
         connection.execute(text("SELECT 1"))
     return {"mensaje": "Conexión a la base de datos exitosa"}
 
-app.mount("/assets", StaticFiles(directory="/frontend/dist/assets"), name="assets")
+if os.path.exists("/frontend/dist/assets"):
+    app.mount("/assets", StaticFiles(directory="/frontend/dist/assets"), name="assets")
 
-@app.get("/{full_path:path}")
-def serve_frontend(full_path: str):
-    return FileResponse("/frontend/dist/index.html")
+    @app.get("/{full_path:path}")
+    def serve_frontend(full_path: str):
+        return FileResponse("/frontend/dist/index.html")
