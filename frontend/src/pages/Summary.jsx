@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import getSummary from '../services/summaryService'
 import { getSales, deleteSale } from '../services/saleService'
+import { getExpenses, deleteExpense } from '../services/expenseService'
 
 const Summary = () => {
     const [summary, setSummary] = useState(null)
     const [sales, setSales] = useState([])
+    const [expenses, setExpenses] = useState([])
     const getLocalDate = () => new Date().toLocaleDateString('en-CA')
     const [dateFrom, setDateFrom] = useState(getLocalDate)
     const [dateTo, setDateTo] = useState(getLocalDate)
@@ -13,6 +15,7 @@ const Summary = () => {
         setSummary(null)
         getSummary(dateFrom, dateTo).then(setSummary)
         getSales(dateFrom, dateTo).then(setSales)
+        getExpenses(dateFrom, dateTo).then(setExpenses)
     }
 
     useEffect(() => {
@@ -21,6 +24,11 @@ const Summary = () => {
 
     const handleDeleteSale = async (saleId) => {
         await deleteSale(saleId)
+        loadData()
+    }
+
+    const handleDeleteExpense = async (expenseId) => {
+        await deleteExpense(expenseId)
         loadData()
     }
 
@@ -72,6 +80,36 @@ const Summary = () => {
                                     <td className="p-3 border">
                                         <button className="text-red-500 hover:underline text-sm"
                                             onClick={() => handleDeleteSale(sale.id)}>
+                                            Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        {expenses.length > 0 && (
+                <div className="mt-6">
+                    <h2 className="text-lg font-bold mb-3">Gastos registrados</h2>
+                    <table className="w-full border-collapse text-sm">
+                        <thead>
+                            <tr className="bg-gray-100">
+                                <th className="text-left p-3 border">Hora</th>
+                                <th className="text-left p-3 border">Total</th>
+                                <th className="text-left p-3 border">Descripción</th>
+                                <th className="text-left p-3 border"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {expenses.map(expense => (
+                                <tr key={expense.id} className="hover:bg-gray-50">
+                                    <td className="p-3 border">{formatHour(expense.date)}</td>
+                                    <td className="p-3 border font-bold">${Number(expense.amount).toLocaleString('es-CO')}</td>
+                                    <td className="p-3 border text-gray-500">{expense.description || '—'}</td>
+                                    <td className="p-3 border">
+                                        <button className="text-red-500 hover:underline text-sm"
+                                            onClick={() => handleDeleteExpense(expense.id)}>
                                             Eliminar
                                         </button>
                                     </td>

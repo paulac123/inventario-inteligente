@@ -1,10 +1,4 @@
-from fastapi.testclient import TestClient
-from main import app
-
-client = TestClient(app)
-
-
-def test_create_variant():
+def test_create_variant(client):
     response = client.post("/product-variants/", json={
         "product_id": 1,
         "size": "M",
@@ -14,7 +8,7 @@ def test_create_variant():
     assert response.json()["size"] == "M"
 
 
-def test_create_variant_sin_producto():
+def test_create_variant_sin_producto(client):
     response = client.post("/product-variants/", json={
         "size": "M",
         "color": "Negro"
@@ -22,7 +16,7 @@ def test_create_variant_sin_producto():
     assert response.status_code == 422
 
 
-def test_delete_variant():
+def test_delete_variant(client):
     response = client.post("/product-variants/", json={
         "product_id": 1,
         "size": "L",

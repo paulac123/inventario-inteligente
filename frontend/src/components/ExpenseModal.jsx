@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import createExpense from '../services/expenseService'
+import { createExpense } from '../services/expenseService'
 import getCategories from '../services/categoryService'
 import getPaymentMethods from '../services/paymentMethodService'
 

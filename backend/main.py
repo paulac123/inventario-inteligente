@@ -12,6 +12,7 @@ from routes.category import router as category_router
 from routes.payment_method import router as payment_method_router
 from routes.productRouter import router as product_router
 from routes.productVariantsRouter import router as product_variants_router
+from routes.metrics import router as metrics_router
 from middlewares.error_handler import http_exception_handler, general_exception_handler
 
 app = FastAPI()
@@ -35,6 +36,7 @@ app.include_router(category_router)
 app.include_router(payment_method_router)
 app.include_router(product_router)
 app.include_router(product_variants_router)
+app.include_router(metrics_router)
 
 
 @app.get("/test-db-connection")
