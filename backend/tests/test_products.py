@@ -1,10 +1,4 @@
-from fastapi.testclient import TestClient
-from main import app
-
-client = TestClient(app)
-
-
-def test_create_product():
+def test_create_product(client):
     response = client.post("/products/", json={
         "name": "Blusa test",
         "reference": "BL001",
@@ -16,7 +10,7 @@ def test_create_product():
     assert response.json()["name"] == "Blusa test"
 
 
-def test_create_product_sin_nombre():
+def test_create_product_sin_nombre(client):
     response = client.post("/products/", json={
         "reference": "BL001",
         "supplier_id": 1,
@@ -26,7 +20,7 @@ def test_create_product_sin_nombre():
     assert response.status_code == 422
 
 
-def test_delete_product():
+def test_delete_product(client):
     response = client.post("/products/", json={
         "name": "Producto a eliminar",
         "reference": "DEL001",
@@ -41,6 +35,6 @@ def test_delete_product():
     assert response.status_code == 200
 
 
-def test_delete_product_inexistente():
+def test_delete_product_inexistente(client):
     response = client.delete("/products/999999")
     assert response.status_code == 404

@@ -25,13 +25,16 @@ const SaleModal = ({ onClose, onSuccess }) => {
 
     const [discount, setDiscount] = useState('')
     const [discountType, setDiscountType] = useState('percent')
+    const [recibido, setRecibido] = useState('')
 
     const [manualSupplierSearch, setManualSupplierSearch] = useState('')
     const [manualSupplierOpen, setManualSupplierOpen] = useState(false)
     const [manualSupplierName, setManualSupplierName] = useState('')
+    const [manualCategoryId, setManualCategoryId] = useState(null)
     const [manualDesc, setManualDesc] = useState('')
     const [manualPrice, setManualPrice] = useState('')
     const [manualQty, setManualQty] = useState('')
+    const [manualSize, setManualSize] = useState('')
 
     useEffect(() => {
         getCategories('sale').then(setCategories)
@@ -82,18 +85,21 @@ const SaleModal = ({ onClose, onSuccess }) => {
     }
 
     const handleAddManual = () => {
-        if (!manualDesc || !manualPrice || !manualQty) return
+        if (!manualCategoryId || !manualSize || !manualDesc || !manualPrice || !manualQty) return
         setItems([...items, {
             key: `manual-${Date.now()}`,
             variant_id: null,
+            category_id: manualCategoryId,
             supplier: manualSupplierName || '—',
-            size: '—',
+            size: manualSize,
             color: manualDesc,
             quantity: parseInt(manualQty),
             unit_price: parseCOP(manualPrice)
         }])
+        setManualCategoryId(null)
         setManualSupplierSearch('')
         setManualSupplierName('')
+        setManualSize('')
         setManualDesc('')
         setManualPrice('')
         setManualQty('')
@@ -111,6 +117,7 @@ const SaleModal = ({ onClose, onSuccess }) => {
 
     const handleSave = async () => {
         if (items.length === 0) { setError('Agrega al menos un producto.'); return }
+        if (total > 0 && parseCOP(recibido) < total) { setError('El valor recibido no cubre el total.'); return }
         if (!paymentMethodId) { setError('Debes seleccionar una forma de pago.'); return }
         try {
             setError('')
@@ -124,7 +131,7 @@ const SaleModal = ({ onClose, onSuccess }) => {
                 discount: discountType === 'percent'
                                 ? parseFloat(discount) || 0
                                 : (subtotal > 0 ? (parseCOP(discount) / subtotal) * 100 : 0),
-                category_id: null,
+                category_id: items.find(i => i.variant_id === null && i.category_id)?.category_id ?? null,
                 payment_method_id: paymentMethodId
             })
             onSuccess()
@@ -193,10 +200,10 @@ const SaleModal = ({ onClose, onSuccess }) => {
                 <p className="text-xs text-gray-400 text-center my-3">— o agregar manualmente —</p>
                 <div className="flex gap-2 mb-3">
                     <div className="relative flex-1">
-                        <input type="text" placeholder="Proveedor"
-                            className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                        <input type="text" placeholder="Proveedor *"
+                            className={`w-full border rounded-lg p-2 text-sm ${manualCategoryId ? 'border-gray-300' : 'border-orange-300'}`}
                             value={manualSupplierSearch}
-                            onChange={(e) => { setManualSupplierSearch(e.target.value); setManualSupplierName('') }}
+                            onChange={(e) => { setManualSupplierSearch(e.target.value); setManualSupplierName(''); setManualCategoryId(null) }}
                             onFocus={() => setManualSupplierOpen(true)}
                             onBlur={() => setTimeout(() => setManualSupplierOpen(false), 150)}
                         />
@@ -206,20 +213,23 @@ const SaleModal = ({ onClose, onSuccess }) => {
                                     .filter(c => c.name.toLowerCase().includes(manualSupplierSearch.toLowerCase()))
                                     .map(c => (
                                         <li key={c.id} className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
-                                            onMouseDown={() => { setManualSupplierName(c.name); setManualSupplierSearch(c.name); setManualSupplierOpen(false) }}>
+                                            onMouseDown={() => { setManualCategoryId(c.id); setManualSupplierName(c.name); setManualSupplierSearch(c.name); setManualSupplierOpen(false) }}>
                                             {c.name}
                                         </li>
                                     ))}
                             </ul>
                         )}
                     </div>
-                    <input placeholder="Descripción" className="flex-1 border border-gray-300 rounded-lg p-2 text-sm"
+                    <input placeholder="Descripción *" className={`flex-1 border rounded-lg p-2 text-sm ${manualDesc ? 'border-gray-300' : 'border-orange-300'}`}
                         value={manualDesc} onChange={(e) => setManualDesc(e.target.value)} />
                 </div>
                 <div className="flex gap-2 mb-4">
-                    <input placeholder="Precio" className="flex-1 border border-gray-300 rounded-lg p-2 text-sm"
+                    <input placeholder="Talla *"
+                        className={`w-20 border rounded-lg p-2 text-sm ${manualSize ? 'border-gray-300' : 'border-orange-300'}`}
+                        value={manualSize} onChange={(e) => setManualSize(e.target.value)} />
+                    <input placeholder="Precio *" className={`flex-1 border rounded-lg p-2 text-sm ${manualPrice ? 'border-gray-300' : 'border-orange-300'}`}
                         value={manualPrice} onChange={(e) => setManualPrice(formatCOP(e.target.value))} />
-                    <input type="number" placeholder="Cant." min="1" className="w-20 border border-gray-300 rounded-lg p-2 text-sm"
+                    <input type="number" placeholder="Cant. *" min="1" className={`w-20 border rounded-lg p-2 text-sm ${manualQty ? 'border-gray-300' : 'border-orange-300'}`}
                         value={manualQty} onChange={(e) => setManualQty(e.target.value)} />
                     <button className="bg-gray-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-700"
                         onClick={handleAddManual}>+</button>
@@ -260,6 +270,24 @@ const SaleModal = ({ onClose, onSuccess }) => {
                             </p>
                         )}
                         <p className="text-right font-bold">Total: ${total.toLocaleString('es-CO')}</p>
+                        <div className="flex items-center justify-end gap-3 mt-2">
+                            <span className="text-sm text-gray-500">Recibido:</span>
+                            <input
+                                placeholder="$0"
+                                className="w-32 border border-gray-300 rounded-lg p-2 text-sm text-right"
+                                value={recibido}
+                                onChange={(e) => setRecibido(formatCOP(e.target.value))}
+                            />
+                            {total > 0 && parseCOP(recibido) > 0 && (
+                                parseCOP(recibido) >= total
+                                    ? <span className="text-sm font-bold text-green-600">
+                                        Vuelto: ${(parseCOP(recibido) - total).toLocaleString('es-CO')}
+                                      </span>
+                                    : <span className="text-sm font-bold text-red-500">
+                                        Falta: ${(total - parseCOP(recibido)).toLocaleString('es-CO')}
+                                      </span>
+                            )}
+                        </div>
                     </div>
                 )}
 

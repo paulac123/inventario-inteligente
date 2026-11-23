@@ -1,6 +1,46 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
+from typing import Optional
 from models.productVariantsModels import ProductVariant
+from models.productModels import Product
 from schemas.productVariantsSchema import ProductVariantCreate
+
+PREFIX_LABELS = {
+    'bl': 'Blusas',
+    'pl': 'Pantalones',
+    'sh': 'Shorts',
+    'vs': 'Vestidos',
+    'cj': 'Conjuntos'
+}
+
+def get_variants_summary_by_type(db: Session, supplier_id: Optional[int] = None):
+    query = db.query(Product.reference, ProductVariant.size, func.sum(ProductVariant.quantity).label("total"))\
+              .join(ProductVariant, ProductVariant.product_id == Product.id)
+    if supplier_id:
+        query = query.filter(Product.supplier_id == supplier_id)
+    result = query.group_by(Product.reference, ProductVariant.size).all()
+
+    aggregated = {}
+    for row in result:
+        prefix = (row.reference or '')[:2].lower()
+        label = PREFIX_LABELS.get(prefix)
+        if not label:
+            continue
+        key = (label, row.size)
+        aggregated[key] = aggregated.get(key, 0) + int(row.total)
+
+    return [{"type": label, "size": size, "total": total}
+            for (label, size), total in sorted(aggregated.items())]
+
+
+def get_variants_summary(db: Session, supplier_id: Optional[int] = None):
+    query = db.query(ProductVariant.size, func.sum(ProductVariant.quantity).label("total"))\
+              .join(Product, ProductVariant.product_id == Product.id)
+    if supplier_id:
+        query = query.filter(Product.supplier_id == supplier_id)
+    result = query.group_by(ProductVariant.size).order_by(ProductVariant.size).all()
+    return [{"size": row.size, "total": int(row.total)} for row in result]
+
 
 def create_variant(db: Session, variant_data: ProductVariantCreate):
     new_variant = ProductVariant(
