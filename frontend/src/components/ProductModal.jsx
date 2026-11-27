@@ -14,6 +14,7 @@ const ProductModal = ({ onClose, onSuccess, product }) => {
     const [barcode, setBarcode] = useState(product?.barcode || '')
     const [qrCode, setQrCode] = useState(product?.qr_code || '')
     const [photo, setPhoto] = useState(product?.photo || '')
+    const [clothingType, setClothingType] = useState(product?.clothing_type || '')
     const [error, setError] = useState('')
 
     useEffect(() => {
@@ -37,8 +38,8 @@ const ProductModal = ({ onClose, onSuccess, product }) => {
         : null
 
     const handleSave = async () => {
-        if (!name || !reference || !supplierId || !salePrice || !costPrice) {
-            setError('Debes completar nombre, referencia, proveedor, precio de venta y costo.')
+        if (!name || !reference || !supplierId || !salePrice || !costPrice || !clothingType) {
+            setError('Debes completar nombre, referencia, proveedor, precios y tipo de prenda.')
             return
         }
         try {
@@ -51,7 +52,8 @@ const ProductModal = ({ onClose, onSuccess, product }) => {
                 cost_price: parseCOP(costPrice),
                 barcode: barcode || null,
                 qr_code: qrCode || null,
-                photo: photo || null
+                photo: photo || null,
+                clothing_type: clothingType || null
             }
             if (product) {
                 await updateProduct(product.id, data)
@@ -114,6 +116,25 @@ const ProductModal = ({ onClose, onSuccess, product }) => {
                         Ganancia: {profitPercent}%
                     </p>
                 )}
+
+                <select
+                    className="w-full border border-gray-300 rounded-lg p-2 mb-3 text-gray-700"
+                    value={clothingType}
+                    onChange={(e) => setClothingType(e.target.value)}
+                >
+                    <option value="">Tipo de prenda *</option>
+                    <option value="Blusa">Blusa</option>
+                    <option value="Pantalón">Pantalón</option>
+                    <option value="Jeans">Jeans</option>
+                    <option value="Capri">Capri</option>
+                    <option value="Short">Short</option>
+                    <option value="Falda">Falda</option>
+                    <option value="Vestido">Vestido</option>
+                    <option value="Conjunto">Conjunto</option>
+                    <option value="Torero">Torero</option>
+                    <option value="Chaqueta">Chaqueta</option>
+                    <option value="Cinturón">Cinturón</option>
+                </select>
 
                 <input type="text" placeholder="Código de barras (opcional)"
                     className="w-full border border-gray-300 rounded-lg p-2 mb-3"

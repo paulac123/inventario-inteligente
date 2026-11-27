@@ -14,7 +14,8 @@ def create_product(db: Session, product_data: ProductCreate):
         cost_price=product_data.cost_price,
         photo=product_data.photo,
         barcode=product_data.barcode,
-        qr_code=product_data.qr_code
+        qr_code=product_data.qr_code,
+        clothing_type=product_data.clothing_type
     )
     db.add(new_product)
     db.commit()
@@ -33,6 +34,7 @@ def update_product(db: Session, product_id: int, product_data: ProductUpdate):
     product.photo = product_data.photo
     product.barcode = product_data.barcode
     product.qr_code = product_data.qr_code
+    product.clothing_type = product_data.clothing_type
     db.commit()
     db.refresh(product)
     return product
@@ -56,7 +58,8 @@ def get_products(db: Session):
             "photo": product.photo,
             "barcode": product.barcode,
             "qr_code": product.qr_code,
-            "total_quantity": total
+            "total_quantity": total,
+            "clothing_type": product.clothing_type
         }
         result.append(product_dict)
     return result

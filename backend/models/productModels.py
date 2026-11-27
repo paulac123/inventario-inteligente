@@ -13,3 +13,4 @@ class Product(Base):
     photo = Column(String(255), nullable=True)
     barcode = Column(String(100), nullable=True)
     qr_code = Column(String(100), nullable=True)
+    clothing_type = Column(String(50), nullable=True)

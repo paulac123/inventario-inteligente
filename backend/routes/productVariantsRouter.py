@@ -3,9 +3,14 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from config.database import get_db
 from services.productVariantsService import create_variant, get_variants_by_product, update_variant, delete_variant, get_variants_summary, get_variants_summary_by_type
+from services.authService import get_current_user
 from schemas.productVariantsSchema import ProductVariantCreate, ProductVariantResponse
 
-router = APIRouter(prefix="/product-variants", tags=["product-variants"])
+router = APIRouter(
+    prefix="/product-variants",
+    tags=["product-variants"],
+    dependencies=[Depends(get_current_user)],
+)
 
 @router.get("/summary")
 def get_summary(supplier_id: Optional[int] = None, db: Session = Depends(get_db)):

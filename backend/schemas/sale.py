@@ -12,6 +12,9 @@ class SaleCreate(BaseModel):
     category_id: Optional[int] = None
     payment_method_id: int
     discount: Optional[float] = 0
+    customer_id: Optional[int] = None
+    is_credit: Optional[bool] = False
+    initial_payment: Optional[float] = None
 
 
 class SaleResponse(BaseModel):
@@ -24,6 +27,8 @@ class SaleResponse(BaseModel):
     payment_method_id: Optional[int] = None
     discount: float = 0
     items: list[SaleItemResponse] = []
+    customer_id: Optional[int] = None
+    is_credit: bool = False
 
     class Config:
         from_attributes = True

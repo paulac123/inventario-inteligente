@@ -3,8 +3,13 @@ from sqlalchemy.orm import Session
 from config.database import get_db
 from schemas.payment_method import PaymentMethodResponse
 from services.paymentMethodService import get_payment_methods
+from services.authService import get_current_user
 
-router = APIRouter(prefix="/payment-methods", tags=["payment-methods"])
+router = APIRouter(
+    prefix="/payment-methods",
+    tags=["payment-methods"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=list[PaymentMethodResponse])

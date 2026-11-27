@@ -4,8 +4,13 @@ from datetime import datetime
 from config.database import get_db
 from schemas.sale import SaleCreate, SaleResponse
 from services.saleService import create_sale, get_sales_by_date, delete_sale
+from services.authService import get_current_user
 
-router = APIRouter(prefix="/sales", tags=["sales"])
+router = APIRouter(
+    prefix="/sales",
+    tags=["sales"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.post("/", response_model=SaleResponse)

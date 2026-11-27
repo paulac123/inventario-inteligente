@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Numeric, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, Numeric, String, DateTime, ForeignKey, Boolean
 from datetime import datetime, timezone
 from config.database import Base
 
@@ -13,3 +13,5 @@ class Sale(Base):
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     payment_method_id = Column(Integer, ForeignKey("payment_methods.id"), nullable=True)
     discount = Column(Numeric(5, 2), nullable=False, default=0)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
+    is_credit = Column(Boolean, default=False, nullable=False)

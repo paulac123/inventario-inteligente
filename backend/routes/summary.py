@@ -2,9 +2,14 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from config.database import get_db
 from services.summaryService import get_summary
+from services.authService import get_current_user
 from datetime import datetime
 
-router = APIRouter(prefix="/summary", tags=["summary"])
+router = APIRouter(
+    prefix="/summary",
+    tags=["summary"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/")
