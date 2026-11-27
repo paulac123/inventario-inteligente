@@ -10,6 +10,7 @@ class ProductUpdate(BaseModel):
     photo: Optional[str] = None
     barcode: Optional[str] = None
     qr_code: Optional[str] = None
+    clothing_type: Optional[str] = None
 
 class ProductCreate(BaseModel):
     name: str
@@ -20,6 +21,7 @@ class ProductCreate(BaseModel):
     photo: Optional[str] = None
     barcode: Optional[str] = None
     qr_code: Optional[str] = None
+    clothing_type: Optional[str] = None
 
 class ProductResponse(BaseModel):
     id: int
@@ -31,6 +33,7 @@ class ProductResponse(BaseModel):
     photo: Optional[str] = None
     barcode: Optional[str] = None
     qr_code: Optional[str] = None
+    clothing_type: Optional[str] = None
     total_quantity: int = 0
     supplier_name: Optional[str] = None
 

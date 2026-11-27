@@ -163,93 +163,102 @@ const Inventory = () => {
                 </div>
             )}
 
-            <table className="w-full border-collapse">
-                <thead>
-                    <tr className="bg-gray-100">
-                        <th className="text-left p-3 border">Foto</th>
-                        <th className="text-left p-3 border">Nombre</th>
-                        <th className="text-left p-3 border">Referencia</th>
-                        <th className="text-left p-3 border">Proveedor</th>
-                        <th className="text-left p-3 border">Precio venta</th>
-                        <th className="text-left p-3 border">Costo</th>
-                        <th className="text-left p-3 border">Unidades</th>
-                        <th className="text-left p-3 border">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredProducts.map(product => (
-                        <>
-                            <tr key={product.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => toggleExpand(product.id)}>
-                                <td className="p-3 border">
-                                    {product.photo
-                                        ? <img src={product.photo} className="w-12 h-12 object-cover rounded" />
-                                        : <span className="text-gray-400 text-sm">Sin foto</span>
-                                    }
-                                </td>
-                                <td className="p-3 border font-medium">
-                                    <span className="mr-2 text-gray-400 text-xs">{expandedId === product.id ? '▼' : '▶'}</span>
-                                    {product.name}
-                                </td>
-                                <td className="p-3 border">{product.reference}</td>
-                                <td className="p-3 border">{product.supplier_name || '—'}</td>
-                                <td className="p-3 border">${Number(product.sale_price).toLocaleString('es-CO')}</td>
-                                <td className="p-3 border">${Number(product.cost_price).toLocaleString('es-CO')}</td>
-                                <td className="p-3 border">{product.total_quantity}</td>
-                                <td className="p-3 border" onClick={(e) => e.stopPropagation()}>
-                                    <div className="flex gap-1 items-center">
-                                        <button title="Editar" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors" onClick={() => setEditProduct(product)}>
-                                            <Pencil size={13} />
-                                        </button>
-                                        <button title="+ Variante" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-green-600 hover:bg-green-50 hover:border-green-200 transition-colors" onClick={() => setSelectedProduct(product)}>
-                                            <PlusCircle size={13} />
-                                        </button>
-                                        <button title="Eliminar" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors" onClick={() => deleteProduct(product.id).then(() => { getProducts().then(setProducts); setSuccessMsg('¡Producto eliminado!'); setTimeout(() => setSuccessMsg(''), 3000) })}>
-                                            <Trash2 size={13} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            {expandedId === product.id && (
-                                <tr key={`variants-${product.id}`}>
-                                    <td colSpan={7} className="bg-gray-50 px-8 py-3 border">
-                                        {variants[product.id]?.length > 0 ? (
-                                            <table className="w-full text-sm">
-                                                <thead>
-                                                    <tr className="text-gray-500">
-                                                        <th className="text-left py-1 pr-6">Talla</th>
-                                                        <th className="text-left py-1 pr-6">Color</th>
-                                                        <th className="text-left py-1 pr-6">Cantidad</th>
-                                                        <th className="text-left py-1 pr-6">Stock mín.</th>
-                                                        <th className="text-left py-1 pr-6">Stock máx.</th>
-                                                        <th className="text-left py-1"></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {variants[product.id].map(v => (
-                                                        <tr key={v.id} className="border-t border-gray-200">
-                                                            <td className="py-2 pr-6">{v.size}</td>
-                                                            <td className="py-2 pr-6">{v.color}</td>
-                                                            <td className="py-2 pr-6">{v.quantity}</td>
-                                                            <td className="py-2 pr-6">{v.min_stock ?? '—'}</td>
-                                                            <td className="py-2 pr-6">{v.max_stock ?? '—'}</td>
-                                                            <td className="py-2">
-                                                                <button className="text-blue-600 hover:underline mr-3" onClick={() => setEditVariant({ ...v, productId: product.id, productName: product.name })}>Editar</button>
-                                                                <button className="text-red-500 hover:underline" onClick={() => handleDeleteVariant(v.id, product.id)}>Eliminar</button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        ) : (
-                                            <p className="text-gray-400 text-sm">Sin variantes registradas.</p>
-                                        )}
+            <div className="overflow-x-auto">
+                <table className="w-full border-collapse min-w-[860px]">
+                    <thead>
+                        <tr className="bg-gray-100">
+                            <th className="text-left p-2 border w-16">Foto</th>
+                            <th className="text-left p-2 border">Nombre</th>
+                            <th className="text-left p-2 border">Referencia</th>
+                            <th className="text-left p-2 border">Proveedor</th>
+                            <th className="text-left p-2 border">Tipo</th>
+                            <th className="text-left p-2 border">Precio venta</th>
+                            <th className="text-left p-2 border">Costo</th>
+                            <th className="text-left p-2 border w-16 text-center">Uds</th>
+                            <th className="text-left p-2 border w-28">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredProducts.map(product => (
+                            <>
+                                <tr key={product.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => toggleExpand(product.id)}>
+                                    <td className="p-2 border">
+                                        {product.photo
+                                            ? <img src={product.photo} className="w-10 h-10 object-cover rounded" />
+                                            : <span className="text-gray-400 text-xs">Sin foto</span>
+                                        }
+                                    </td>
+                                    <td className="p-2 border font-medium text-sm">
+                                        <span className="mr-1 text-gray-400 text-xs">{expandedId === product.id ? '▼' : '▶'}</span>
+                                        {product.name}
+                                    </td>
+                                    <td className="p-2 border text-sm">{product.reference}</td>
+                                    <td className="p-2 border text-sm">{product.supplier_name || '—'}</td>
+                                    <td className="p-2 border">
+                                        {product.clothing_type
+                                            ? <span className="text-xs bg-orange-100 text-orange-700 font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">{product.clothing_type}</span>
+                                            : <span className="text-xs text-red-400">Sin tipo</span>
+                                        }
+                                    </td>
+                                    <td className="p-2 border text-sm">${Number(product.sale_price).toLocaleString('es-CO')}</td>
+                                    <td className="p-2 border text-sm">${Number(product.cost_price).toLocaleString('es-CO')}</td>
+                                    <td className="p-2 border text-sm text-center">{product.total_quantity}</td>
+                                    <td className="p-2 border" onClick={(e) => e.stopPropagation()}>
+                                        <div className="flex gap-1 items-center">
+                                            <button title="Editar producto" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors" onClick={() => setEditProduct(product)}>
+                                                <Pencil size={13} />
+                                            </button>
+                                            <button title="Agregar variante" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-green-600 hover:bg-green-50 hover:border-green-200 transition-colors" onClick={() => setSelectedProduct(product)}>
+                                                <PlusCircle size={13} />
+                                            </button>
+                                            <button title="Eliminar producto" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors" onClick={() => deleteProduct(product.id).then(() => { getProducts().then(setProducts); setSuccessMsg('¡Producto eliminado!'); setTimeout(() => setSuccessMsg(''), 3000) })}>
+                                                <Trash2 size={13} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
-                            )}
-                        </>
-                    ))}
-                </tbody>
-            </table>
+                                {expandedId === product.id && (
+                                    <tr key={`variants-${product.id}`}>
+                                        <td colSpan={9} className="bg-gray-50 px-8 py-3 border">
+                                            {variants[product.id]?.length > 0 ? (
+                                                <table className="w-full text-sm">
+                                                    <thead>
+                                                        <tr className="text-gray-500">
+                                                            <th className="text-left py-1 pr-6">Talla</th>
+                                                            <th className="text-left py-1 pr-6">Color</th>
+                                                            <th className="text-left py-1 pr-6">Cantidad</th>
+                                                            <th className="text-left py-1 pr-6">Stock mín.</th>
+                                                            <th className="text-left py-1 pr-6">Stock máx.</th>
+                                                            <th className="text-left py-1"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {variants[product.id].map(v => (
+                                                            <tr key={v.id} className="border-t border-gray-200">
+                                                                <td className="py-2 pr-6">{v.size}</td>
+                                                                <td className="py-2 pr-6">{v.color}</td>
+                                                                <td className="py-2 pr-6">{v.quantity}</td>
+                                                                <td className="py-2 pr-6">{v.min_stock ?? '—'}</td>
+                                                                <td className="py-2 pr-6">{v.max_stock ?? '—'}</td>
+                                                                <td className="py-2">
+                                                                    <button className="text-blue-600 hover:underline mr-3" onClick={() => setEditVariant({ ...v, productId: product.id, productName: product.name })}>Editar</button>
+                                                                    <button className="text-red-500 hover:underline" onClick={() => handleDeleteVariant(v.id, product.id)}>Eliminar</button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            ) : (
+                                                <p className="text-gray-400 text-sm">Sin variantes registradas.</p>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )}
+                            </>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
             {showModal && <ProductModal onClose={() => setShowModal(false)} onSuccess={handleSuccess} />}
             {editProduct && <ProductModal product={editProduct} onClose={() => setEditProduct(null)} onSuccess={() => { handleSuccess(); setEditProduct(null) }} />}
             {selectedProduct && <VariantModal

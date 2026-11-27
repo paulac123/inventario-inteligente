@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { createExpense } from '../services/expenseService'
 import getCategories from '../services/categoryService'
 import getPaymentMethods from '../services/paymentMethodService'
+import { getDebts } from '../services/debtService'
 
 const ExpenseModal = ({ onClose, onSuccess }) => {
     const [amount, setAmount] = useState('')
@@ -15,10 +16,13 @@ const ExpenseModal = ({ onClose, onSuccess }) => {
     const [pmSearch, setPmSearch] = useState('')
     const [pmOpen, setPmOpen] = useState(false)
     const [error, setError] = useState('')
+    const [debts, setDebts] = useState([])
+    const [debtId, setDebtId] = useState('')
 
     useEffect(() => {
         getCategories('expense').then(setCategories)
         getPaymentMethods().then(setPaymentMethods)
+        getDebts().then(d => setDebts(d.filter(x => x.is_active)))
     }, [])
 
     const formatCOP = (value) => {
@@ -34,7 +38,7 @@ const ExpenseModal = ({ onClose, onSuccess }) => {
         }
         try {
             setError('')
-            await createExpense({ amount: parseCOP(amount), description, category_id: categoryId, payment_method_id: paymentMethodId })
+            await createExpense({ amount: parseCOP(amount), description, category_id: categoryId, payment_method_id: paymentMethodId, debt_id: debtId ? parseInt(debtId) : null })
             onSuccess()
             onClose()
         } catch (e) {
@@ -90,6 +94,21 @@ const ExpenseModal = ({ onClose, onSuccess }) => {
                 </div>
                 <input type="text" placeholder="Valor" className="w-full border border-gray-300 rounded-lg p-2 mb-3" value={amount} onChange={(e) => setAmount(formatCOP(e.target.value))} />
                 <input type="text" placeholder="Descripción (opcional)" className="w-full border border-gray-300 rounded-lg p-2 mb-3" value={description} onChange={(e) => setDescription(e.target.value)} />
+                {debts.length > 0 && (
+                    <div className="mb-3">
+                        <select
+                            className="w-full border border-gray-300 rounded-lg p-2 text-sm text-gray-700"
+                            value={debtId}
+                            onChange={(e) => setDebtId(e.target.value)}>
+                            <option value="">Este gasto no abona a ninguna deuda</option>
+                            {debts.map(d => (
+                                <option key={d.id} value={d.id}>
+                                    Abonar a: {d.name} — pendiente ${Math.round(d.remaining).toLocaleString('es-CO')}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
                 <button className="bg-gray-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-600" onClick={onClose}>Cancelar</button>
                 <button className="bg-red-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-600" onClick={handleSave}>Guardar</button>

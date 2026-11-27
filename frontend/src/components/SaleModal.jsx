@@ -4,9 +4,9 @@ import getCategories from '../services/categoryService'
 import getPaymentMethods from '../services/paymentMethodService'
 import { getProducts } from '../services/productService'
 import { getVariantsByProduct } from '../services/productVariantsService'
+import { searchCustomers, createCustomer } from '../services/customerService'
 
 const SaleModal = ({ onClose, onSuccess }) => {
-    const [description, setDescription] = useState('')
     const [categories, setCategories] = useState([])
     const [paymentMethodId, setPaymentMethodId] = useState('')
     const [paymentMethods, setPaymentMethods] = useState([])
@@ -27,11 +27,20 @@ const SaleModal = ({ onClose, onSuccess }) => {
     const [discountType, setDiscountType] = useState('percent')
     const [recibido, setRecibido] = useState('')
 
+    const [isCredit, setIsCredit] = useState(false)
+    const [customerSearch, setCustomerSearch] = useState('')
+    const [customerOpen, setCustomerOpen] = useState(false)
+    const [customerId, setCustomerId] = useState(null)
+    const [customerName, setCustomerName] = useState('')
+    const [customerPhone, setCustomerPhone] = useState('')
+    const [customerResults, setCustomerResults] = useState([])
+    const [initialPayment, setInitialPayment] = useState('')
+
     const [manualSupplierSearch, setManualSupplierSearch] = useState('')
     const [manualSupplierOpen, setManualSupplierOpen] = useState(false)
     const [manualSupplierName, setManualSupplierName] = useState('')
     const [manualCategoryId, setManualCategoryId] = useState(null)
-    const [manualDesc, setManualDesc] = useState('')
+    const [manualClothingType, setManualClothingType] = useState('')
     const [manualPrice, setManualPrice] = useState('')
     const [manualQty, setManualQty] = useState('')
     const [manualSize, setManualSize] = useState('')
@@ -41,6 +50,11 @@ const SaleModal = ({ onClose, onSuccess }) => {
         getPaymentMethods().then(setPaymentMethods)
         getProducts().then(setProducts)
     }, [])
+
+    useEffect(() => {
+        if (customerSearch.length < 2) { setCustomerResults([]); return }
+        searchCustomers(customerSearch).then(setCustomerResults)
+    }, [customerSearch])
 
     const formatCOP = (value) => {
         const num = value.replace(/\D/g, '')
@@ -85,22 +99,22 @@ const SaleModal = ({ onClose, onSuccess }) => {
     }
 
     const handleAddManual = () => {
-        if (!manualCategoryId || !manualSize || !manualDesc || !manualPrice || !manualQty) return
+        if (!manualCategoryId || !manualClothingType || !manualSize || !manualPrice || !manualQty) return
         setItems([...items, {
             key: `manual-${Date.now()}`,
             variant_id: null,
             category_id: manualCategoryId,
             supplier: manualSupplierName || '—',
             size: manualSize,
-            color: manualDesc,
+            description: manualClothingType,
             quantity: parseInt(manualQty),
             unit_price: parseCOP(manualPrice)
         }])
         setManualCategoryId(null)
         setManualSupplierSearch('')
         setManualSupplierName('')
+        setManualClothingType('')
         setManualSize('')
-        setManualDesc('')
         setManualPrice('')
         setManualQty('')
     }
@@ -117,22 +131,31 @@ const SaleModal = ({ onClose, onSuccess }) => {
 
     const handleSave = async () => {
         if (items.length === 0) { setError('Agrega al menos un producto.'); return }
-        if (total > 0 && parseCOP(recibido) < total) { setError('El valor recibido no cubre el total.'); return }
+        if (!isCredit && total > 0 && parseCOP(recibido) < total) { setError('El valor recibido no cubre el total.'); return }
         if (!paymentMethodId) { setError('Debes seleccionar una forma de pago.'); return }
+        if (isCredit && !customerName.trim()) { setError('Ingresa el nombre del cliente para el separado.'); return }
         try {
             setError('')
+            let resolvedCustomerId = customerId
+            if (isCredit && !customerId && customerName.trim()) {
+                const newCustomer = await createCustomer({ name: customerName.trim(), phone: customerPhone.trim() || null })
+                resolvedCustomerId = newCustomer.id
+            }
             await createSale({
                 items: items.map(i => ({
                     product_variant_id: i.variant_id,
                     quantity: i.quantity,
                     unit_price: i.unit_price
                 })),
-                description,
+                description: items.find(i => i.variant_id === null)?.description ?? null,
                 discount: discountType === 'percent'
                                 ? parseFloat(discount) || 0
                                 : (subtotal > 0 ? (parseCOP(discount) / subtotal) * 100 : 0),
                 category_id: items.find(i => i.variant_id === null && i.category_id)?.category_id ?? null,
-                payment_method_id: paymentMethodId
+                payment_method_id: paymentMethodId,
+                is_credit: isCredit,
+                customer_id: resolvedCustomerId || null,
+                initial_payment: isCredit && initialPayment ? parseCOP(initialPayment) : null
             })
             onSuccess()
             onClose()
@@ -199,6 +222,26 @@ const SaleModal = ({ onClose, onSuccess }) => {
                 {/* Agregar manual */}
                 <p className="text-xs text-gray-400 text-center my-3">— o agregar manualmente —</p>
                 <div className="flex gap-2 mb-3">
+                    <select
+                        className={`flex-1 border rounded-lg p-2 text-sm text-gray-700 ${manualClothingType ? 'border-gray-300' : 'border-orange-300'}`}
+                        value={manualClothingType}
+                        onChange={(e) => setManualClothingType(e.target.value)}
+                    >
+                        <option value="">Tipo de prenda *</option>
+                        <option value="Blusa">Blusa</option>
+                        <option value="Pantalón">Pantalón</option>
+                        <option value="Jeans">Jeans</option>
+                        <option value="Capri">Capri</option>
+                        <option value="Short">Short</option>
+                        <option value="Falda">Falda</option>
+                        <option value="Vestido">Vestido</option>
+                        <option value="Conjunto">Conjunto</option>
+                        <option value="Torero">Torero</option>
+                        <option value="Chaqueta">Chaqueta</option>
+                        <option value="Cinturón">Cinturón</option>
+                    </select>
+                </div>
+                <div className="flex gap-2 mb-3">
                     <div className="relative flex-1">
                         <input type="text" placeholder="Proveedor *"
                             className={`w-full border rounded-lg p-2 text-sm ${manualCategoryId ? 'border-gray-300' : 'border-orange-300'}`}
@@ -220,8 +263,6 @@ const SaleModal = ({ onClose, onSuccess }) => {
                             </ul>
                         )}
                     </div>
-                    <input placeholder="Descripción *" className={`flex-1 border rounded-lg p-2 text-sm ${manualDesc ? 'border-gray-300' : 'border-orange-300'}`}
-                        value={manualDesc} onChange={(e) => setManualDesc(e.target.value)} />
                 </div>
                 <div className="flex gap-2 mb-4">
                     <input placeholder="Talla *"
@@ -331,15 +372,77 @@ const SaleModal = ({ onClose, onSuccess }) => {
                     )}
                 </div>
 
-                <input type="text" placeholder="Descripción (opcional)"
-                    className="w-full border border-gray-300 rounded-lg p-2 mb-3"
-                    value={description} onChange={(e) => setDescription(e.target.value)} />
+                {/* Toggle crédito / separado */}
+                <div className="flex items-center gap-3 mb-3">
+                    <button
+                        onClick={() => setIsCredit(false)}
+                        className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-colors ${!isCredit ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-300 hover:border-green-400'}`}>
+                        Pago completo
+                    </button>
+                    <button
+                        onClick={() => setIsCredit(true)}
+                        className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-colors ${isCredit ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-500 border-gray-300 hover:border-orange-400'}`}>
+                        Separado / Crédito
+                    </button>
+                </div>
+
+                {/* Datos del cliente (solo si es crédito) */}
+                {isCredit && (
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+                        <p className="text-xs font-semibold text-orange-700 mb-2">Datos del cliente</p>
+                        <div className="relative mb-2">
+                            <input type="text" placeholder="Nombre del cliente *"
+                                className={`w-full border rounded-lg p-2 text-sm ${customerName ? 'border-gray-300' : 'border-orange-300'}`}
+                                value={customerSearch}
+                                onChange={(e) => { setCustomerSearch(e.target.value); setCustomerName(e.target.value); setCustomerId(null) }}
+                                onFocus={() => setCustomerOpen(true)}
+                                onBlur={() => setTimeout(() => setCustomerOpen(false), 150)}
+                            />
+                            {customerOpen && customerResults.length > 0 && (
+                                <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg max-h-36 overflow-y-auto shadow-lg">
+                                    {customerResults.map(c => (
+                                        <li key={c.id} className="px-3 py-2 hover:bg-orange-50 cursor-pointer text-sm"
+                                            onMouseDown={() => {
+                                                setCustomerId(c.id)
+                                                setCustomerName(c.name)
+                                                setCustomerPhone(c.phone || '')
+                                                setCustomerSearch(c.name)
+                                                setCustomerOpen(false)
+                                            }}>
+                                            <span className="font-medium">{c.name}</span>
+                                            {c.phone && <span className="text-gray-400 ml-2 text-xs">{c.phone}</span>}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                        <input type="tel" placeholder="Teléfono"
+                            className="w-full border border-gray-300 rounded-lg p-2 text-sm mb-2"
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value)}
+                        />
+                        <input placeholder="Abono inicial (opcional)"
+                            className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                            value={initialPayment}
+                            onChange={(e) => setInitialPayment(formatCOP(e.target.value))}
+                        />
+                        {initialPayment && (
+                            <p className="text-xs text-orange-600 mt-1">
+                                Saldo pendiente: ${(total - parseCOP(initialPayment)).toLocaleString('es-CO')}
+                            </p>
+                        )}
+                    </div>
+                )}
 
                 {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
                 <div className="flex gap-3">
                     <button className="bg-gray-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-600" onClick={onClose}>Cancelar</button>
-                    <button className="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700" onClick={handleSave}>Confirmar venta</button>
+                    <button
+                        className={`flex-1 text-white px-6 py-3 rounded-lg font-bold ${isCredit ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'}`}
+                        onClick={handleSave}>
+                        {isCredit ? 'Registrar separado' : 'Confirmar venta'}
+                    </button>
                 </div>
             </div>
         </div>

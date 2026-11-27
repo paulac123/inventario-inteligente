@@ -10,6 +10,7 @@ class ExpenseCreate(BaseModel):
     date: Optional[datetime] = None
     category_id: int
     payment_method_id: int
+    debt_id: Optional[int] = None
 
 
 class ExpenseResponse(BaseModel):

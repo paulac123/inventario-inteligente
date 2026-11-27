@@ -4,8 +4,13 @@ from datetime import datetime
 from config.database import get_db
 from schemas.expense import ExpenseCreate, ExpenseResponse
 from services.expenseService import create_expense, get_expenses_by_date, delete_expense
+from services.authService import get_current_user
 
-router = APIRouter(prefix="/expenses", tags=["expenses"])
+router = APIRouter(
+    prefix="/expenses",
+    tags=["expenses"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("/", response_model=list[ExpenseResponse])

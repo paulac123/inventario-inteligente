@@ -35,4 +35,9 @@ def create_tables():
     from models.productModels import Product
     from models.productVariantsModels import ProductVariant
     from models.saleItemModels import SaleItem
+    from models.customerModels import Customer
+    from models.salePaymentModels import SalePayment
+    from models.userModels import User
+    from models.alertModels import StockAlertConfig
+    from models.debtModels import Debt, DebtPayment
     Base.metadata.create_all(engine)

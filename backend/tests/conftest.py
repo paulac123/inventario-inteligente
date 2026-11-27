@@ -1,9 +1,15 @@
+import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key")
+
 from config.database import Base, get_db
 from main import app
+from models.userModels import User
+from services.authService import get_current_user
 
 SQLALCHEMY_TEST_URL = "sqlite:///./test.db"
 
@@ -18,15 +24,26 @@ def setup_db():
     Base.metadata.drop_all(bind=engine)
 
 
+def _override_get_db():
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 @pytest.fixture
 def client():
-    def override_get_db():
-        db = TestingSessionLocal()
-        try:
-            yield db
-        finally:
-            db.close()
+    app.dependency_overrides[get_db] = _override_get_db
+    app.dependency_overrides[get_current_user] = lambda: User(
+        id=1, username="test_admin", password_hash="x", role="admin"
+    )
+    yield TestClient(app)
+    app.dependency_overrides.clear()
 
-    app.dependency_overrides[get_db] = override_get_db
+
+@pytest.fixture
+def anon_client():
+    app.dependency_overrides[get_db] = _override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()

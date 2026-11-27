@@ -32,9 +32,18 @@ const getSalesByType = async ({ dateFrom, dateTo } = {}) => {
     return response.data
 }
 
-const getSalesBySupplier = async ({ dateFrom, dateTo } = {}) => {
-    const response = await api.get('/metrics/sales-by-supplier', { params: buildParams(dateFrom, dateTo) })
+const getSalesBySupplier = async ({ dateFrom, dateTo, clothingType } = {}) => {
+    const params = { ...buildParams(dateFrom, dateTo) }
+    if (clothingType) params.clothing_type = clothingType
+    const response = await api.get('/metrics/sales-by-supplier', { params })
     return response.data
 }
 
-export { getSalesByTypeAndSize, getManualSalesByType, getSalesByType, getSalesBySupplier }
+const getSalesOverTime = async ({ dateFrom, dateTo, groupBy = 'day', clothingType } = {}) => {
+    const params = { ...buildParams(dateFrom, dateTo), group_by: groupBy }
+    if (clothingType) params.clothing_type = clothingType
+    const response = await api.get('/metrics/sales-over-time', { params })
+    return response.data
+}
+
+export { getSalesByTypeAndSize, getManualSalesByType, getSalesByType, getSalesBySupplier, getSalesOverTime }
